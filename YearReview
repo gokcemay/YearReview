@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Year Review</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      background: #f2f2f2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    #app {
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 2rem;
+      max-width: 600px;
+      width: 90%;
+    }
+
+    h1, h2 {
+      margin-top: 0;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .question-text {
+      margin-bottom: 1rem;
+    }
+
+    textarea {
+      width: 100%;
+      height: 100px;
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      resize: vertical;
+    }
+
+    button {
+      padding: 0.7rem 1.2rem;
+      background: #007BFF;
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    #downloadLink {
+      text-decoration: none;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Start Screen -->
+    <div id="startScreen">
+      <h1>Year Review</h1>
+      <p>
+        Reflect on your year with these thought-provoking questions.&nbsp;
+        <a href="https://stephango.com/40-questions" target="_blank">
+          Created by Steph Ango
+        </a>
+      </p>
+      <button id="startBtn">Start</button>
+    </div>
+
+    <!-- Question Screen -->
+    <div id="questionScreen" class="hidden">
+      <h2 id="questionTitle">Question</h2>
+      <div class="question-text" id="questionText"></div>
+      <textarea id="answerText" placeholder="Your answer here..."></textarea><br>
+      <button id="nextBtn">Next</button>
+    </div>
+
+    <!-- Final Screen -->
+    <div id="finalScreen" class="hidden">
+      <h2>All done!</h2>
+      <p>
+        Thank you for completing your year review. Click below to download your
+        answers as a Markdown file.
+      </p>
+      <button id="downloadBtn">
+        <a id="downloadLink" href="#" download="YearReview.md">Download</a>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // List of questions
+    const questions = [
+      "What did you do this year that you’d never done before?",
+      "Did you keep your new year’s resolutions?",
+      "Did anyone close to you give birth?",
+      "Did anyone close to you die?",
+      "What cities/states/countries did you visit?",
+      "What would you like to have next year that you lacked this year?",
+      "What date(s) from this year will remain etched upon your memory, and why?",
+      "What was your biggest achievement of the year?",
+      "What was your biggest failure?",
+      "What other hardships did you face?",
+      "Did you suffer illness or injury?",
+      "What was the best thing you bought?",
+      "Whose behavior merited celebration?",
+      "Whose behavior made you appalled?",
+      "Where did most of your money go?",
+      "What did you get really, really, really excited about?",
+      "What song will always remind you of this year?",
+      "Compared to this time last year, are you: happier or sadder? Thinner or fatter? Richer or poorer?",
+      "What do you wish you’d done more of?",
+      "What do you wish you’d done less of?",
+      "How are you spending the holidays?",
+      "Did you fall in love this year?",
+      "Do you hate anyone now that you didn’t hate this time last year?",
+      "What was your favorite show?",
+      "What was the best book you read?",
+      "What was your greatest musical discovery of the year?",
+      "What was your favorite film?",
+      "What was your favorite meal?",
+      "What did you want and get?",
+      "What did you want and not get?",
+      "What did you do on your birthday?",
+      "What one thing would have made your year immeasurably more satisfying?",
+      "How would you describe your personal fashion this year?",
+      "What kept you sane?",
+      "Which celebrity/public figure did you admire the most?",
+      "What political issue stirred you the most?",
+      "Who did you miss?",
+      "Who was the best new person you met?",
+      "What valuable life lesson did you learn this year?",
+      "What is a quote that sums up your year?"
+    ];
+
+    // Store answers in an array corresponding to each question
+    let answers = new Array(questions.length).fill("");
+    let currentQuestionIndex = 0;
+
+    // DOM elements
+    const startScreen = document.getElementById("startScreen");
+    const questionScreen = document.getElementById("questionScreen");
+    const finalScreen = document.getElementById("finalScreen");
+    const questionText = document.getElementById("questionText");
+    const answerText = document.getElementById("answerText");
+    const nextBtn = document.getElementById("nextBtn");
+    const startBtn = document.getElementById("startBtn");
+    const downloadLink = document.getElementById("downloadLink");
+
+    // Show the first question
+    function showQuestion(index) {
+      questionText.textContent = questions[index];
+      answerText.value = answers[index] || "";
+    }
+
+    // Move to the next question
+    function nextQuestion() {
+      // Save current answer
+      answers[currentQuestionIndex] = answerText.value;
+      currentQuestionIndex++;
+
+      if (currentQuestionIndex < questions.length) {
+        // Display next question
+        showQuestion(currentQuestionIndex);
+      } else {
+        // No more questions, show final screen
+        questionScreen.classList.add("hidden");
+        finalScreen.classList.remove("hidden");
+
+        // Generate Markdown content
+        const markdownContent = generateMarkdown(questions, answers);
+
+        // Create a Blob from the markdown content
+        const blob = new Blob([markdownContent], { type: "text/markdown" });
+        // Create a download link
+        downloadLink.href = URL.createObjectURL(blob);
+      }
+    }
+
+    // Generate Markdown from the questions and answers
+    function generateMarkdown(questions, answers) {
+      let md = "# Year Review\n\n";
+      questions.forEach((q, i) => {
+        md += `**Q${i + 1}:** ${q}\n\n`;
+        md += `**A:** ${answers[i] || "(no answer)"}\n\n---\n\n`;
+      });
+      return md;
+    }
+
+    // Event listeners
+    startBtn.addEventListener("click", () => {
+      startScreen.classList.add("hidden");
+      questionScreen.classList.remove("hidden");
+      showQuestion(currentQuestionIndex);
+    });
+
+    nextBtn.addEventListener("click", () => {
+      nextQuestion();
+    });
+  </script>
+</body>
+</html>
