@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Yıl Değerlendirmesi</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      background: #f2f2f2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    #app {
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 2rem;
+      max-width: 600px;
+      width: 90%;
+    }
+
+    h1, h2 {
+      margin-top: 0;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .question-text {
+      margin-bottom: 1rem;
+    }
+
+    textarea {
+      width: 100%;
+      height: 100px;
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      resize: vertical;
+    }
+
+    button {
+      padding: 0.7rem 1.2rem;
+      background: #007BFF;
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    #downloadLink {
+      text-decoration: none;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Başlangıç Ekranı -->
+    <div id="startScreen">
+      <h1>Yıl Değerlendirmesi</h1>
+      <p>
+        Bu yılınızı düşünmenize yardımcı olacak sorular.&nbsp;
+        <a href="https://stephango.com/40-questions" target="_blank">
+          Steph Ango tarafından oluşturuldu
+        </a>
+      </p>
+      <button id="startBtn">Başla</button>
+    </div>
+
+    <!-- Soru Ekranı -->
+    <div id="questionScreen" class="hidden">
+      <h2 id="questionTitle">Soru</h2>
+      <div class="question-text" id="questionText"></div>
+      <textarea id="answerText" placeholder="Cevabınız..."></textarea><br>
+      <button id="nextBtn">Sonraki</button>
+    </div>
+
+    <!-- Son Ekran -->
+    <div id="finalScreen" class="hidden">
+      <h2>Tamamlandı!</h2>
+      <p>
+        Yıl değerlendirmesini tamamladığınız için teşekkürler. Aşağıdaki butona
+        tıklayarak yanıtlarınızı bir Markdown dosyası olarak indirebilirsiniz.
+      </p>
+      <button id="downloadBtn">
+        <a id="downloadLink" href="#" download="YilDegerlendirmesi.md">İndir</a>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Soru listesi (Türkçe)
+    const questions = [
+      "Bu yıl, daha önce hiç yapmadığınız hangi şeyi yaptınız?",
+      "Yeni yıl kararlarınıza sadık kaldınız mı?",
+      "Size yakın birisi doğum yaptı mı?",
+      "Size yakın birisi öldü mü?",
+      "Hangi şehirleri/devletleri/ülkeleri ziyaret ettiniz?",
+      "Bu yıl sahip olmadığınız, gelecek yıl sahip olmak istediğiniz nedir?",
+      "Bu yılki hangi tarih(ler) hafızanızda yer edecek ve neden?",
+      "Bu yılki en büyük başarınız neydi?",
+      "En büyük başarısızlığınız neydi?",
+      "Başka hangi zorluklarla karşılaştınız?",
+      "Hastalık veya yaralanma geçirdiniz mi?",
+      "Satın aldığınız en iyi şey neydi?",
+      "Kimin davranışını kutlanmaya değer buldunuz?",
+      "Kimin davranışından dehşete kapıldınız?",
+      "Paranızın çoğu nereye gitti?",
+      "Sizi gerçekten çok heyecanlandıran neydi?",
+      "Bu yılı size her zaman hatırlatacak şarkı hangisi?",
+      "Geçen yılın bu zamanına kıyasla: Daha mı mutlusunuz yoksa üzgün? Daha mı zayıf yoksa kilolu? Daha mı zengin yoksa fakir?",
+      "Hangi şeyi daha çok yapmayı dilerdiniz?",
+      "Hangi şeyi daha az yapmayı dilerdiniz?",
+      "Tatilleri nasıl geçiriyorsunuz?",
+      "Bu yıl âşık oldunuz mu?",
+      "Geçen yıl bu zamanlar nefret etmediğiniz biri için şimdi nefret hissediyor musunuz?",
+      "En sevdiğiniz program/gösteri hangisiydi?",
+      "Okuduğunuz en iyi kitap hangisiydi?",
+      "Bu yılki en büyük müzikal keşfiniz neydi?",
+      "En sevdiğiniz film hangisiydi?",
+      "En sevdiğiniz yemek hangisiydi?",
+      "Ne istediniz ve elde ettiniz?",
+      "Ne istediniz ama elde edemediniz?",
+      "Doğum gününüzde ne yaptınız?",
+      "Yılınızı ölçülemez derecede daha tatmin edici kılacak tek şey ne olurdu?",
+      "Bu yıl kişisel stilinizi nasıl tanımlardınız?",
+      "Aklınızı başınızda tutmanıza ne yardım etti?",
+      "Hangi ünlü/kamu figürüne en çok hayranlık duydunuz?",
+      "Hangi siyasi konu sizi en çok etkiledi ya da heyecanlandırdı?",
+      "Kimi özlediniz?",
+      "Bu yıl tanıştığınız en iyi yeni kişi kimdi?",
+      "Bu yıl hangi değerli hayat dersini öğrendiniz?",
+      "Yılınızı özetleyen bir alıntı nedir?"
+    ];
+
+    // Cevapları sorularla eşleşecek şekilde saklayacağız
+    let answers = new Array(questions.length).fill("");
+    let currentQuestionIndex = 0;
+
+    // DOM öğeleri
+    const startScreen = document.getElementById("startScreen");
+    const questionScreen = document.getElementById("questionScreen");
+    const finalScreen = document.getElementById("finalScreen");
+    const questionText = document.getElementById("questionText");
+    const answerText = document.getElementById("answerText");
+    const nextBtn = document.getElementById("nextBtn");
+    const startBtn = document.getElementById("startBtn");
+    const downloadLink = document.getElementById("downloadLink");
+
+    // İlk soruyu göster
+    function showQuestion(index) {
+      questionText.textContent = questions[index];
+      answerText.value = answers[index] || "";
+    }
+
+    // Sonraki soruya geç
+    function nextQuestion() {
+      // Mevcut cevabı kaydet
+      answers[currentQuestionIndex] = answerText.value;
+      currentQuestionIndex++;
+
+      if (currentQuestionIndex < questions.length) {
+        // Bir sonraki soruyu göster
+        showQuestion(currentQuestionIndex);
+      } else {
+        // Soru kalmadı, final ekranını göster
+        questionScreen.classList.add("hidden");
+        finalScreen.classList.remove("hidden");
+
+        // Markdown içeriğini oluştur
+        const markdownContent = generateMarkdown(questions, answers);
+
+        // Blob oluştur
+        const blob = new Blob([markdownContent], { type: "text/markdown" });
+        // İndirme bağlantısını güncelle
+        downloadLink.href = URL.createObjectURL(blob);
+      }
+    }
+
+    // Soru ve cevaplardan Markdown oluştur
+    function generateMarkdown(questions, answers) {
+      let md = "# Yıl Değerlendirmesi\n\n";
+      questions.forEach((q, i) => {
+        md += `**Soru ${i + 1}:** ${q}\n\n`;
+        md += `**Cevap:** ${answers[i] || "(cevap yok)"}\n\n---\n\n`;
+      });
+      return md;
+    }
+
+    // Etkinlik dinleyicileri
+    startBtn.addEventListener("click", () => {
+      startScreen.classList.add("hidden");
+      questionScreen.classList.remove("hidden");
+      showQuestion(currentQuestionIndex);
+    });
+
+    nextBtn.addEventListener("click", () => {
+      nextQuestion();
+    });
+  </script>
+</body>
+</html>
